@@ -8,9 +8,8 @@ The Eticor Shift Connector Demo is a .NET Core application designed to demonstra
 ## Features
 
 - Connect to the Eticor system
-- Retrieve shift data
-- Manipulate and display shift information
-- Demonstrate integration capabilities
+- Retrieve data from the Eticor API
+- Create an inspection via the Eticor API
 
 ## Prerequisites
 
@@ -44,15 +43,3 @@ The Eticor Shift Connector Demo is a .NET Core application designed to demonstra
 ## Configuration
 
 Update the `appsettings.json` file with your Eticor system credentials and other necessary configurations.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For any questions or inquiries, please contact [yourname@domain.com](mailto:yourname@domain.com).
