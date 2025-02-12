@@ -145,7 +145,7 @@ internal class EticorApiService
     private async Task CheckTokenValidity()
     {
         // If the token is not set or is expired, get a new one
-        if (_accessToken is null)
+        if (string.IsNullOrEmpty(_accessToken))
         {
             await RefreshToken();
         }
