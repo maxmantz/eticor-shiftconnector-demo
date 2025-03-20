@@ -48,4 +48,9 @@ internal class InspectionModel
     /// The UTC date when the inspection was created
     /// </summary>
     public DateTime CreatedDate { get; set; }
+
+    /// <summary>
+    /// Whether the inspection is complete or not
+    /// </summary>
+    public bool IsComplete { get; set; }
 }

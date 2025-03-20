@@ -85,4 +85,26 @@ internal class DelegationModel
     /// Comments specific to the site the delegation is in. Usually contains instructions for the responsible employee.
     /// </summary>
     public IList<SiteCommentModel> SiteComments { get; set; } = [];
+
+    /// <summary>
+    /// The created date of the delegation
+    /// </summary>
+    public DateTime? CreatedDate { get; set; }
+
+    /// <summary>
+    /// The last updated date of the delegation
+    /// </summary>
+    public DateTime? LastUpdated { get; set; }
+
+    /// <summary>
+    /// The warning period (number of days) for the delegation.
+    /// When the due date of the delegation is within the warning period, the delegation status will be yellow.
+    /// </summary>
+    public int? WarningPeriod { get; set; }
+
+    /// <summary>
+    /// The interval count of the delegation. Only used if the interval is not "None".
+    /// For example if the interval is "Weekly" and the interval count is 2, the delegation is due every 2 weeks.
+    /// </summary>
+    public int IntervalCount { get; set; }
 }
