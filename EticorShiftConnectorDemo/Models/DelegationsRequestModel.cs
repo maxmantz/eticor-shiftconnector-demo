@@ -23,4 +23,9 @@ internal class DelegationsRequestModel : PageRequest
     /// Allows extending the results with related information
     /// </summary>
     public string[] Extend { get; set; } = [];
+
+    /// <summary>
+    /// If set, only includes delegations that are newer than the specified date.
+    /// </summary>
+    public DateTime? NewerThan { get; set; }
 }

@@ -35,7 +35,7 @@ logger.LogInformation(JsonSerializer.Serialize(employee, jsonSerializerOptions))
 
 #region getting delegations for employee
 // we get the delegations for the employee by the employee id from the previous call
-var delegations = await service.GetDelegationsAsync(new DelegationsRequestModel
+var request = new DelegationsRequestModel
 {
     // we can use the page request properties to limit the result
     Offset = 0,
@@ -46,7 +46,9 @@ var delegations = await service.GetDelegationsAsync(new DelegationsRequestModel
     IsDisabled = false, // don't include delegations that are disabled
     // extending the response with the employees, orgUnits and laws gives us the information about related entities
     Extend = ["employees", "orgUnits", "laws"]
-});
+};
+
+var delegations = await service.GetDelegationsAsync(request);
 
 logger.LogInformation($"Delegations:");
 logger.LogInformation(JsonSerializer.Serialize(delegations, jsonSerializerOptions));
@@ -112,6 +114,16 @@ validInspection.Documents.Add(docModel);
 var inspection = await service.CreateInspectionAsync(validInspection);
 logger.LogInformation($"Inspection:");
 logger.LogInformation(JsonSerializer.Serialize(inspection, jsonSerializerOptions));
+#endregion
+
+#region filtering delegations by date
+// we can filter the delegations by date. The following request will get all delegations that have changed today.
+var date = DateTime.UtcNow.Date;
+request.NewerThan = date;
+
+delegations = await service.GetDelegationsAsync(request);
+logger.LogInformation($"Delegations newer than {date}:");
+logger.LogInformation(JsonSerializer.Serialize(delegations, jsonSerializerOptions));
 #endregion
 
 logger.LogInformation("Done");

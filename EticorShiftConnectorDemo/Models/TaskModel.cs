@@ -28,6 +28,11 @@ internal class TaskModel
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// Contains additional information about the task set by the client.
+    /// </summary>
+    public string Hint { get; set; }
+
+    /// <summary>
     /// The task's sources.
     /// </summary>
     public IList<SourceModel> Sources { get; set; } = [];

@@ -19,6 +19,11 @@ internal static class ExtensionMethods
                     query.Append($"{property.Name}={item}&");
                 }
             }
+            else if (property.PropertyType == typeof(DateTime?) && value != null)
+            {
+                var dateTime = (DateTime)value;
+                query.Append($"{property.Name}={dateTime:yyyy-MM-ddTHH:mm:ssZ}&");
+            }
             else if (value != null)
             {
                 query.Append($"{property.Name}={value}&");
