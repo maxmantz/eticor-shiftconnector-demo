@@ -122,6 +122,14 @@ internal class EticorApiService
         return inspection!;
     }
 
+    public async Task<OrgUnitModel> GetOrgUnitByIdAsync(int id)
+    {
+        var requestPath = $"{Endpoints.OrgUnits}/{id}";
+        _log.LogInformation($"GET {requestPath}");
+        var orgUnit = await GetAsync<OrgUnitModel>(requestPath);
+        return orgUnit!;
+    }
+
     #region private methods
     private string _accessToken = string.Empty;
     private readonly IConfigurationRoot _config;

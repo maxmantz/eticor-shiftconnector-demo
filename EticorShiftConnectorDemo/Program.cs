@@ -126,4 +126,13 @@ logger.LogInformation($"Delegations newer than {date}:");
 logger.LogInformation(JsonSerializer.Serialize(delegations, jsonSerializerOptions));
 #endregion
 
+#region getting org unit by ID
+// we can get the org unit by ID. The following request will get the org unit by ID
+var orgUnitId = delegations.Items.First().OrgUnitId;
+var orgUnit = await service.GetOrgUnitByIdAsync(orgUnitId.Value);
+
+logger.LogInformation($"OrgUnit:");
+logger.LogInformation(JsonSerializer.Serialize(orgUnit, jsonSerializerOptions));
+#endregion
+
 logger.LogInformation("Done");
