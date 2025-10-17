@@ -16,7 +16,8 @@ var jsonSerializerOptions = new JsonSerializerOptions
 {
     PropertyNameCaseInsensitive = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    WriteIndented = true
+    WriteIndented = true,
+    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 };
 
 using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
