@@ -71,29 +71,26 @@ Update the `appsettings.json` file with your Eticor system credentials and other
 This application has been updated to work with the new Eticor public API. Key changes include:
 
 ### Endpoint Updates
+
 - All endpoints now use the `/public` prefix (e.g., `v2/public/employees` instead of `v2/employees`)
 - Fixed typo: `personellNumber` → `personnelNumber`
 
 ### Model Updates
+
 - `DelegationsRequestModel` replaced with `DelegationListRequestModel`
 - Removed unsupported parameters: `IsArchived`, `IsDisabled`, `Extend`, `NewerThan`
 - Added new filtering parameters: `StartDate`, `EndDate`, `OrderBy`, `Descending`, and more
 
 ### Behavioral Changes
+
 - Employee endpoint now returns extended data by default (orgUnits, permissions, deputies)
 - The `extend` parameter is no longer needed
 - Laws endpoint is not available in the public API
 
 ### For Complete Migration Details
+
 See [UPGRADE_GUIDE.md](UPGRADE_GUIDE.md) for comprehensive migration instructions, including:
+
 - Detailed breaking changes
 - Complete endpoint mapping
 - Code migration examples
-- Testing strategies
-- Troubleshooting guide
-
-## API Documentation
-
-- **Old API Specification**: See `oldapi.json`
-- **New API Specification**: See `newapi.json`
-- **Developer Comments**: See `comment.md` (in German)
