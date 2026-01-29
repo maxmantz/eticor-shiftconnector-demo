@@ -1,4 +1,4 @@
-﻿// This is a demo console application to demonstrate the interaction of ShiftConnector with the Eticor API.
+// This is a demo console application to demonstrate the interaction of ShiftConnector with the Eticor API.
 
 
 using EticorShiftConnectorDemo.Models;
@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 # region init
-var config = new ConfigurationBuilder()
+IConfigurationRoot config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-var jsonSerializerOptions = new JsonSerializerOptions
+JsonSerializerOptions jsonSerializerOptions = new()
 {
     PropertyNameCaseInsensitive = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -20,15 +20,15 @@ var jsonSerializerOptions = new JsonSerializerOptions
     Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 };
 
-using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-var logger = loggerFactory.CreateLogger<Program>();
+using ILoggerFactory loggerFactory = LoggerFactory.Create(static builder => builder.AddConsole());
+ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
 
-var service = new EticorApiService(config, jsonSerializerOptions, loggerFactory.CreateLogger<EticorApiService>());
+EticorApiService service = new(config, jsonSerializerOptions, loggerFactory.CreateLogger<EticorApiService>());
 #endregion
 
 #region getting employee data
-// we get the employee by the personnell number from the configuration
-var employee = await service.GetEmployeeByPersonnellNumberAsync(config["PersonnellNumber"]!);
+// we get the employee by the personnel number from the configuration
+EmployeeModel employee = await service.GetEmployeeByPersonnelNumberAsync(config["PersonnelNumber"]!);
 
 logger.LogInformation($"Employee:");
 logger.LogInformation(JsonSerializer.Serialize(employee, jsonSerializerOptions));
@@ -36,20 +36,20 @@ logger.LogInformation(JsonSerializer.Serialize(employee, jsonSerializerOptions))
 
 #region getting delegations for employee
 // we get the delegations for the employee by the employee id from the previous call
-var request = new DelegationsRequestModel
+DelegationListRequestModel request = new()
 {
     // we can use the page request properties to limit the result
     Offset = 0,
     Limit = 10,
     // we can filter the delegations by the responsible id
     ResponsibleId = employee.Id,
-    IsArchived = false, // don't include delegations of archived tasks
-    IsDisabled = false, // don't include delegations that are disabled
-    // extending the response with the employees, orgUnits and laws gives us the information about related entities
-    Extend = ["employees", "orgUnits", "laws"]
+    // Note: The new API no longer supports IsArchived, IsDisabled, or Extend parameters
+    // The API now returns full delegation details by default
+    // We can optionally set OrderBy for sorting
+    OrderBy = "duedate"
 };
 
-var delegations = await service.GetDelegationsAsync(request);
+PageResult<DelegationModel> delegations = await service.GetDelegationsAsync(request);
 
 logger.LogInformation($"Delegations:");
 logger.LogInformation(JsonSerializer.Serialize(delegations, jsonSerializerOptions));
@@ -57,7 +57,7 @@ logger.LogInformation(JsonSerializer.Serialize(delegations, jsonSerializerOption
 
 #region getting orgUnits
 // we get the orgUnits from the previous call. If we want all orgUnits we can use the following request
-var orgUnits = await service.GetOrgUnitsAsync(new OrgUnitRequestModel
+PageResult<OrgUnitModel> orgUnits = await service.GetOrgUnitsAsync(new OrgUnitRequestModel
 {
     Offset = 0,
     Limit = 10
@@ -69,29 +69,29 @@ logger.LogInformation(JsonSerializer.Serialize(orgUnits, jsonSerializerOptions))
 
 #region getting documents
 // in delegations, documents can be attached to the delegation, the task or the. We can get those with the following requests
-var documentsForDelegation = await service.GetDocumentsForDelegationAsync(delegations.Items.First().Id);
+List<DocumentModel> documentsForDelegation = await service.GetDocumentsForDelegationAsync(delegations.Items.First().Id);
 logger.LogInformation($"Documents for delegation:");
 logger.LogInformation(JsonSerializer.Serialize(documentsForDelegation, jsonSerializerOptions));
 
-var documentsForTask = await service.GetDocumentsForTaskAsync(delegations.Items.First().TaskId);
+PageResult<DocumentModel> documentsForTask = await service.GetDocumentsForTaskAsync(delegations.Items.First().TaskId);
 logger.LogInformation($"Documents for task:");
-logger.LogInformation(JsonSerializer.Serialize(delegations.Items.First().TaskId, jsonSerializerOptions));
+logger.LogInformation(JsonSerializer.Serialize(documentsForTask, jsonSerializerOptions));
 
-var documentsForLaw = await service.GetDocumentsForLawAsync(delegations.Items.First().Task.Sources.First().Law.Id);
+PageResult<DocumentModel> documentsForLaw = await service.GetDocumentsForLawAsync(delegations.Items.First().Task.Sources.First().Law.Id);
 logger.LogInformation($"Documents for law:");
 logger.LogInformation(JsonSerializer.Serialize(documentsForLaw, jsonSerializerOptions));
 
 // usually laws have documents attached to them, we can get those with the following request
 if (documentsForLaw.Items.Count > 0)
 {
-    var documentFromLaw = await service.GetDocumentByIdAsync(documentsForLaw.Items.First().Id);
+    DocumentModel documentFromLaw = await service.GetDocumentByIdAsync(documentsForLaw.Items.First().Id);
     await service.SaveDocumentAsync(documentFromLaw);
 }
 #endregion
 
 #region creating an inspection
 // to perform an inspection, the following request can be used
-var validInspection = new CreateInspectionModel
+CreateInspectionModel validInspection = new()
 {
     DelegationId = delegations.Items.First().Id,
     InspectorId = delegations.Items.First().ResponsibleId,
@@ -102,8 +102,8 @@ var validInspection = new CreateInspectionModel
 };
 
 // we can also attach a document to the inspection
-var filePath = Path.Join(Environment.CurrentDirectory, "FileAttachment.txt");
-var docModel = new CreateDocumentModel
+string filePath = Path.Join(Environment.CurrentDirectory, "FileAttachment.txt");
+CreateDocumentModel docModel = new()
 {
     Bytes = await File.ReadAllBytesAsync(filePath),
     FileName = Path.GetFileName(filePath),
@@ -112,25 +112,26 @@ var docModel = new CreateDocumentModel
 
 validInspection.Documents.Add(docModel);
 
-var inspection = await service.CreateInspectionAsync(validInspection);
+InspectionModel inspection = await service.CreateInspectionAsync(validInspection);
 logger.LogInformation($"Inspection:");
 logger.LogInformation(JsonSerializer.Serialize(inspection, jsonSerializerOptions));
 #endregion
 
 #region filtering delegations by date
-// we can filter the delegations by date. The following request will get all delegations that have changed today.
-var date = DateTime.UtcNow.Date;
-request.NewerThan = date;
+// we can filter the delegations by date. The new API uses StartDate and EndDate for filtering.
+// To get delegations starting from today onwards, we use StartDate.
+DateTime date = DateTime.UtcNow.Date;
+request.StartDate = date;
 
 delegations = await service.GetDelegationsAsync(request);
-logger.LogInformation($"Delegations newer than {date}:");
+logger.LogInformation($"Delegations starting from {date}:");
 logger.LogInformation(JsonSerializer.Serialize(delegations, jsonSerializerOptions));
 #endregion
 
 #region getting org unit by ID
 // we can get the org unit by ID. The following request will get the org unit by ID
-var orgUnitId = delegations.Items.First().OrgUnitId;
-var orgUnit = await service.GetOrgUnitByIdAsync(orgUnitId.Value);
+int? orgUnitId = delegations.Items.First().OrgUnitId;
+OrgUnitModel orgUnit = await service.GetOrgUnitByIdAsync(orgUnitId.Value);
 
 logger.LogInformation($"OrgUnit:");
 logger.LogInformation(JsonSerializer.Serialize(orgUnit, jsonSerializerOptions));
