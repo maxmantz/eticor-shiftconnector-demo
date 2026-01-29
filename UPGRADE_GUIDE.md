@@ -8,12 +8,9 @@ This guide provides comprehensive information for migrating from the Eticor API 
 2. [Breaking Changes](#breaking-changes)
 3. [Endpoint Changes](#endpoint-changes)
 4. [Model Changes](#model-changes)
-5. [Authentication Changes](#authentication-changes)
-6. [Behavioral Changes](#behavioral-changes)
-7. [Migration Steps](#migration-steps)
-8. [Code Examples](#code-examples)
-9. [Testing](#testing)
-10. [Troubleshooting](#troubleshooting)
+5. [Behavioral Changes](#behavioral-changes)
+6. [Migration Steps](#migration-steps)
+7. [Code Examples](#code-examples)
 
 ## Overview
 
@@ -37,11 +34,13 @@ The new API maintains backward compatibility by supporting both old and new endp
 All endpoints now require the `/public` prefix in the path.
 
 **Old API:**
+
 ```
 https://{baseUrl}/employees/personellNumber/{personnelNumber}
 ```
 
 **New API:**
+
 ```
 https://{baseUrl}/v2/public/employees/{personnelNumber}
 ```
@@ -51,10 +50,12 @@ https://{baseUrl}/v2/public/employees/{personnelNumber}
 The personnel number endpoint has been restructured and the typo has been corrected.
 
 **Old API:**
+
 - Path: `v2/employees/personellNumber/{employeePersonellNumber}`
 - Supported `extend` query parameter for related entities
 
 **New API:**
+
 - Path: `v2/public/employees/{personnelNumber}`
 - No longer needs `extend` parameter - always returns full details including:
   - Deputy information
@@ -66,12 +67,14 @@ The personnel number endpoint has been restructured and the typo has been correc
 The request model for delegations has changed significantly.
 
 **Removed Parameters:**
+
 - `IsArchived` - No longer supported
 - `IsDisabled` - No longer supported
 - `Extend` - No longer needed (ignored if sent)
 - `NewerThan` - Replaced by `StartDate` and `EndDate`
 
 **New Parameters:**
+
 - `DelegationId` - Filter by specific delegation ID
 - `EmployeeId` - Filter by employee
 - `StartDate` - Filter by start date
@@ -94,23 +97,24 @@ The `/public/laws` endpoint is **not available** in the new public API. If you n
 
 ### Complete Endpoint Mapping
 
-| Old API Endpoint | New API Endpoint | Notes |
-|-----------------|------------------|-------|
-| `v2/employees/personellNumber/{personnelNumber}` | `v2/public/employees/{personnelNumber}` | Typo corrected, extend parameter removed |
-| `v2/delegations` | `v2/public/delegations` | Different parameters available |
-| `v2/orgUnits` | `v2/public/orgUnits` | Same functionality |
-| `v2/orgUnits/{id}` | `v2/public/orgUnits/{id}` | Same functionality |
-| `v2/tasks/{taskId}/documents` | `v2/public/tasks/{taskId}/documents` | Same functionality |
-| `v2/delegations/{delegationId}/documents` | `v2/public/delegations/{delegationId}/documents` | Same functionality |
-| `v2/documents/{documentId}` | `v2/public/documents/{documentId}` | Same functionality |
-| `v2/inspections` | `v2/public/inspections` | Same functionality |
-| `v2/laws/{lawId}/documents` | `v2/public/laws/{lawId}/documents` | Same functionality |
+| Old API Endpoint                                 | New API Endpoint                                 | Notes                                    |
+| ------------------------------------------------ | ------------------------------------------------ | ---------------------------------------- |
+| `v2/employees/personellNumber/{personnelNumber}` | `v2/public/employees/{personnelNumber}`          | Typo corrected, extend parameter removed |
+| `v2/delegations`                                 | `v2/public/delegations`                          | Different parameters available           |
+| `v2/orgUnits`                                    | `v2/public/orgUnits`                             | Same functionality                       |
+| `v2/orgUnits/{id}`                               | `v2/public/orgUnits/{id}`                        | Same functionality                       |
+| `v2/tasks/{taskId}/documents`                    | `v2/public/tasks/{taskId}/documents`             | Same functionality                       |
+| `v2/delegations/{delegationId}/documents`        | `v2/public/delegations/{delegationId}/documents` | Same functionality                       |
+| `v2/documents/{documentId}`                      | `v2/public/documents/{documentId}`               | Same functionality                       |
+| `v2/inspections`                                 | `v2/public/inspections`                          | Same functionality                       |
+| `v2/laws/{lawId}/documents`                      | `v2/public/laws/{lawId}/documents`               | Same functionality                       |
 
 ## Model Changes
 
 ### DelegationsRequestModel → DelegationListRequestModel
 
 **Old Model (DelegationsRequestModel):**
+
 ```csharp
 internal class DelegationsRequestModel : PageRequest
 {
@@ -123,6 +127,7 @@ internal class DelegationsRequestModel : PageRequest
 ```
 
 **New Model (DelegationListRequestModel):**
+
 ```csharp
 internal class DelegationListRequestModel : PageRequest
 {
@@ -155,12 +160,14 @@ internal class DelegationListRequestModel : PageRequest
 The new API returns extended information without requiring the `extend` parameter.
 
 **Employee Endpoint:**
+
 - **Old API**: Required `?extend=orgUnits,permissions` to get full data
 - **New API**: Always returns orgUnits (with accessLevel), permissions, and deputy information
 
 ### 2. Parameter Handling
 
 The new API is more tolerant of unsupported parameters:
+
 - Sending old parameters (like `IsArchived`, `Extend`) to the new API won't cause errors
 - Unsupported parameters are simply ignored
 - This allows for gradual migration without breaking existing code
@@ -170,6 +177,7 @@ The new API is more tolerant of unsupported parameters:
 The response structure for most endpoints remains the same, but the data is more complete:
 
 **Old API Response (with extend parameter):**
+
 ```json
 {
   "id": 7,
@@ -182,6 +190,7 @@ The response structure for most endpoints remains the same, but the data is more
 ```
 
 **New API Response (automatic):**
+
 ```json
 {
   "id": 7,
@@ -345,6 +354,7 @@ public static string ToQueryParameters(this object obj)
 ### Complete Migration Example
 
 **Before (Old API):**
+
 ```csharp
 // Configuration
 config["PersonnellNumber"]  // With typo
@@ -370,6 +380,7 @@ PageResult<DelegationModel> delegations = await service.GetDelegationsAsync(requ
 ```
 
 **After (New API):**
+
 ```csharp
 // Configuration
 config["PersonnelNumber"]  // Typo fixed
