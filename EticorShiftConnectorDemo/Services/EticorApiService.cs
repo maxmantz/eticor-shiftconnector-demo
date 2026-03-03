@@ -6,12 +6,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Web;
 
 namespace EticorShiftConnectorDemo.Services
 {
     internal static class Endpoints
     {
-        public const string EmployeeByPersonnelNumber = "public/employees";
+        public const string EmployeeByEmail = "public/employees/email";
         public const string Delegations = "public/delegations";
         public const string OrgUnits = "public/orgUnits";
         public const string Tasks = "public/tasks";
@@ -22,10 +23,10 @@ namespace EticorShiftConnectorDemo.Services
 
     internal class EticorApiService(IConfigurationRoot config, JsonSerializerOptions jsonSerializerOptions, ILogger<EticorApiService> log)
     {
-        public async Task<EmployeeModel> GetEmployeeByPersonnelNumberAsync(string personnelNumber)
+        public async Task<EmployeeModel> GetEmployeeByEmailAsync(string email)
         {
-            _log.LogInformation($"Get employee by personnel number {personnelNumber}");
-            string requestPath = $"{Endpoints.EmployeeByPersonnelNumber}/{personnelNumber}";
+            _log.LogInformation($"Get employee by personnel number {email}");
+            string requestPath = $"{Endpoints.EmployeeByEmail}/{HttpUtility.UrlEncode(email)}";
             EmployeeModel employee = await GetAsync<EmployeeModel>(requestPath);
 
             return employee!;

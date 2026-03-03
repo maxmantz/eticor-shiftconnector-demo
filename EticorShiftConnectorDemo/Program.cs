@@ -28,7 +28,7 @@ EticorApiService service = new(config, jsonSerializerOptions, loggerFactory.Crea
 
 #region getting employee data
 // we get the employee by the personnel number from the configuration
-EmployeeModel employee = await service.GetEmployeeByPersonnelNumberAsync(config["PersonnelNumber"]!);
+EmployeeModel employee = await service.GetEmployeeByEmailAsync(config["Email"]!);
 
 logger.LogInformation($"Employee:");
 logger.LogInformation(JsonSerializer.Serialize(employee, jsonSerializerOptions));
