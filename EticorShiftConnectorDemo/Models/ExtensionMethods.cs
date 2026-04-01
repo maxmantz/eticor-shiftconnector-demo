@@ -1,34 +1,44 @@
-﻿using System.Text;
+using System.Text;
 
-namespace EticorShiftConnectorDemo.Models;
-
-internal static class ExtensionMethods
+namespace EticorShiftConnectorDemo.Models
 {
-    public static string ToQueryParameters(this object obj)
+    internal static class ExtensionMethods
     {
-        var properties = obj.GetType().GetProperties();
-        var query = new StringBuilder();
-        foreach (var property in properties)
+        public static string ToQueryParameters(this object obj)
         {
-            var value = property.GetValue(obj);
-            if (property.PropertyType.IsArray)
+            System.Reflection.PropertyInfo[] properties = obj.GetType().GetProperties();
+            StringBuilder query = new StringBuilder();
+            foreach (System.Reflection.PropertyInfo property in properties)
             {
-                var array = (string[])value;
-                foreach (var item in array)
+                object? value = property.GetValue(obj);
+                if (value == null)
                 {
-                    query.Append($"{property.Name}={item}&");
+                    continue; // Skip null values
+                }
+
+                if (property.PropertyType.IsArray || (property.PropertyType.IsGenericType && property.PropertyType.GetElementType() != null))
+                {
+                    if (value is System.Collections.IEnumerable enumerable and not string)
+                    {
+                        foreach (object? item in enumerable)
+                        {
+                            if (item != null)
+                            {
+                                _ = query.Append($"{property.Name}={item}&");
+                            }
+                        }
+                    }
+                }
+                else if (property.PropertyType == typeof(DateTime?) && value is DateTime dateTime)
+                {
+                    _ = query.Append($"{property.Name}={dateTime:yyyy-MM-ddTHH:mm:ssZ}&");
+                }
+                else
+                {
+                    _ = query.Append($"{property.Name}={value}&");
                 }
             }
-            else if (property.PropertyType == typeof(DateTime?) && value != null)
-            {
-                var dateTime = (DateTime)value;
-                query.Append($"{property.Name}={dateTime:yyyy-MM-ddTHH:mm:ssZ}&");
-            }
-            else if (value != null)
-            {
-                query.Append($"{property.Name}={value}&");
-            }
+            return query.ToString().TrimEnd('&');
         }
-        return query.ToString().TrimEnd('&');
     }
 }
